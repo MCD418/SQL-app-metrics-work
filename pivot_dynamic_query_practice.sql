@@ -41,3 +41,29 @@ set @query = 'SELECT date, ' + @cols + '
 			order by date'
 
 execute sp_executesql @query; 
+
+
+
+
+--- The code path
+
+/*Declare Variable*/  
+DECLARE @Pivot_Column [nvarchar](max);  
+DECLARE @Query [nvarchar](max);  
+  
+/*Select Pivot Column*/  
+SELECT @Pivot_Column= COALESCE(@Pivot_Column+',','')+ QUOTENAME(Year) FROM  
+(SELECT DISTINCT [Year] FROM Employee)Tab  
+  
+/*Create Dynamic Query*/  
+SELECT @Query='SELECT Name, '+@Pivot_Column+'FROM   
+(SELECT Name, [Year] , Sales FROM Employee )Tab1  
+PIVOT  
+(  
+SUM(Sales) FOR [Year] IN ('+@Pivot_Column+')) AS Tab2  
+ORDER BY Tab2.Name'  
+  
+/*Execute Query*/  
+EXEC  sp_executesql  @Query  
+
+---THE END
